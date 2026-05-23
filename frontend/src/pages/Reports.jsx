@@ -8,7 +8,11 @@ function Reports() {
   const { formatCurrency } = useSettings();
 
   // Date filtering states
-  const [startDate, setStartDate] = useState('2026-03-15');
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 1); // Default to 1 month ago
+    return date.toISOString().split('T')[0];
+  });
   const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const [downloading, setDownloading] = useState(null);

@@ -95,16 +95,33 @@ function SalesAnalytics() {
 
   // Get slow moving products (products with low sales)
   const getSlowMoving = () => {
+    if (sales.length === 0) return [];
+    
     const productMap = {};
+    const firstSaleDate = {};
     
     sales.forEach(sale => {
       const name = products[sale.productId] || sale.productId;
-      if (!productMap[name]) productMap[name] = 0;
+      const saleDate = new Date(sale.date || sale.createdAt);
+      
+      if (!productMap[name]) {
+        productMap[name] = 0;
+        firstSaleDate[name] = saleDate;
+      }
       productMap[name] += sale.quantity;
+      
+      // Track earliest sale date
+      if (saleDate < firstSaleDate[name]) {
+        firstSaleDate[name] = saleDate;
+      }
     });
 
+    const now = new Date();
     return Object.entries(productMap)
-      .map(([name, sales]) => ({ name, sales, daysInStock: Math.floor(Math.random() * 120) + 30 }))
+      .map(([name, sales]) => {
+        const daysInStock = Math.floor((now - firstSaleDate[name]) / (1000 * 60 * 60 * 24));
+        return { name, sales, daysInStock };
+      })
       .sort((a, b) => a.sales - b.sales)
       .slice(0, 3);
   };
@@ -122,6 +139,45 @@ function SalesAnalytics() {
   const monthlyTrend = getMonthlyTrend();
   const topProducts = getTopProducts();
   const slowMoving = getSlowMoving();
+
+  // Check if there's any data at all
+  const hasData = sales.length > 0;
+
+  if (!hasData) {
+    return (
+      <div className="sales-analytics">
+        <h1 className="page-title">Sales Analytics</h1>
+        <div className="empty-state-container">
+          <div className="empty-state-icon">📊</div>
+          <h2>No Sales Data Yet</h2>
+          <p>Start making sales to see analytics and insights here.</p>
+        </div>
+        <style jsx>{`
+          .empty-state-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            text-align: center;
+          }
+          .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+          }
+          .empty-state-container h2 {
+            color: #374151;
+            margin-bottom: 10px;
+          }
+          .empty-state-container p {
+            color: #6B7280;
+            font-size: 16px;
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="sales-analytics">
