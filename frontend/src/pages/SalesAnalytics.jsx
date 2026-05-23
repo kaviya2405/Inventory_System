@@ -15,8 +15,8 @@ function SalesAnalytics() {
     try {
       setLoading(true);
       const [salesRes, stockRes] = await Promise.all([
-        fetch('http://localhost:5000/api/sales/history'),
-        fetch('http://localhost:5000/api/sales/stock')
+        fetch('/api/sales/history'),
+        fetch('/api/sales/stock')
       ]);
 
       const salesData = await salesRes.json();
