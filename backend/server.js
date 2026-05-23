@@ -29,11 +29,11 @@ app.use(morgan('dev'));
 // Static files for production
 const path = require('path');
 
-// API Routes
+// API Routes - MUST come before static files
+app.use('/api/auth', authRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/bill', billRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Health check
@@ -45,6 +45,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Serve static files - MUST come before catch-all route
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+// Catch-all for React router - MUST be last
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -52,13 +60,6 @@ app.use((err, req, res, next) => {
     error: 'Something went wrong!',
     message: err.message
   });
-});
-
-// Catch-all for React router
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
 });
 
 // Start server
