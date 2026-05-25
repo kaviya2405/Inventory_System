@@ -572,15 +572,6 @@ const getSettings = async (req, res) => {
     });
   }
 };
-    });
-  } catch (error) {
-    console.error('Get settings error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
-};
 
 module.exports = {
   signup,
