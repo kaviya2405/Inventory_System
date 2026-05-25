@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, Bell, ChevronDown, AlertTriangle, TrendingUp, Package, ShoppingCart, X } from 'lucide-react';
 import { API_URL } from '../config';
 import { useStock } from '../context/StockContext';
+import { useSettings } from '../context/SettingsContext';
 
 function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -11,6 +12,7 @@ function Header() {
   const [hasBeenViewed, setHasBeenViewed] = useState(false);
   const [user, setUser] = useState(null);
   const { stockData } = useStock();
+  const { enableNotifications } = useSettings();
 
   // Load user from localStorage
   useEffect(() => {
@@ -178,15 +180,17 @@ function Header() {
       </div>
 
       <div className="header-right">
-        <button
-          className="notification-btn"
-          onClick={handleNotificationClick}
-        >
-          <Bell size={20} />
-          {!hasBeenViewed && notifications.length > 0 && (
-            <span className="notification-badge">{notifications.length}</span>
-          )}
-        </button>
+        {enableNotifications && (
+          <button
+            className="notification-btn"
+            onClick={handleNotificationClick}
+          >
+            <Bell size={20} />
+            {!hasBeenViewed && notifications.length > 0 && (
+              <span className="notification-badge">{notifications.length}</span>
+            )}
+          </button>
+        )}
 
         {showNotifications && (
           <div className="notification-dropdown">

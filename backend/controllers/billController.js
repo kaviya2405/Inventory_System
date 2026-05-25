@@ -99,9 +99,15 @@ const confirmStockUpdate = async (req, res) => {
           continue;
         }
 
-        // Check if product with same name already exists
-        let product = await Product.findOne({
-          name: { $regex: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+        // Normalize name for better matching (trim, lowercase, remove extra spaces)
+        const normalizedName = name.trim().toLowerCase().replace(/\s+/g, ' ');
+        
+        // Check if product with same name already exists using normalized comparison
+        // First, get all products and compare normalized names
+        const allProducts = await Product.find({});
+        let product = allProducts.find(p => {
+          const existingNormalizedName = p.name.trim().toLowerCase().replace(/\s+/g, ' ');
+          return existingNormalizedName === normalizedName;
         });
 
         let productId, productName, category;

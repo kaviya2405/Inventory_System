@@ -490,6 +490,7 @@ const updateSettings = async (req, res) => {
       timezone, 
       dateFormat, 
       lowStockThreshold,
+      enableNotifications,
       notifications 
     } = req.body;
 
@@ -514,6 +515,7 @@ const updateSettings = async (req, res) => {
     if (timezone) user.settings.timezone = timezone;
     if (dateFormat) user.settings.dateFormat = dateFormat;
     if (lowStockThreshold !== undefined) user.settings.lowStockThreshold = lowStockThreshold;
+    if (enableNotifications !== undefined) user.settings.enableNotifications = enableNotifications;
     if (notifications) {
       user.settings.notifications = {
         ...user.settings.notifications,

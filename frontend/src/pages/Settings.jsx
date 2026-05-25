@@ -4,7 +4,7 @@ import { useSettings } from '../context/SettingsContext';
 import { API_URL } from '../config';
 
 function Settings() {
-  const { currency, setCurrency } = useSettings();
+  const { currency, setCurrency, enableNotifications, setEnableNotifications } = useSettings();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -20,6 +20,7 @@ function Settings() {
     timezone: 'UTC+5.5',
     dateFormat: 'DD/MM/YYYY',
     lowStockThreshold: 10,
+    enableNotifications: true,
     notifications: {
       purchaseOrderConfirmation: true,
       dailySalesSummary: false,
@@ -54,6 +55,7 @@ function Settings() {
           timezone: data.user.settings?.timezone || 'UTC+5.5',
           dateFormat: data.user.settings?.dateFormat || 'DD/MM/YYYY',
           lowStockThreshold: data.user.settings?.lowStockThreshold || 10,
+          enableNotifications: data.user.settings?.enableNotifications ?? true,
           notifications: {
             purchaseOrderConfirmation: data.user.settings?.notifications?.purchaseOrderConfirmation ?? true,
             dailySalesSummary: data.user.settings?.notifications?.dailySalesSummary ?? false,
@@ -108,6 +110,7 @@ function Settings() {
       if (data.success) {
         setMessage('Settings saved successfully!');
         setCurrency(settings.currency);
+        setEnableNotifications(settings.enableNotifications);
         
         // Update localStorage user data
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -272,6 +275,20 @@ function Settings() {
           </div>
           <p className="card-desc">Decide which sales and purchase activities trigger alerts.</p>
           <div className="settings-form mt-form">
+            <div className="toggle-group">
+              <div className="toggle-text">
+                <label>Enable Notifications</label>
+                <span>Turn on/off all notifications in the UI</span>
+              </div>
+              <label className="switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.enableNotifications}
+                  onChange={(e) => handleChange('enableNotifications', e.target.checked)}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
             <div className="toggle-group">
               <div className="toggle-text">
                 <label>New Purchase Order Confirmation</label>
