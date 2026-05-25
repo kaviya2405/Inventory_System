@@ -17,11 +17,16 @@ function Reports() {
 
   const [downloading, setDownloading] = useState(null);
 
+  // Track if data exists
+  const [hasSales, setHasSales] = useState(false);
+  const [hasPurchases, setHasPurchases] = useState(false);
+
   // Modal states
   const [viewModal, setViewModal] = useState({ isOpen: false, title: '', content: null, isInventory: false });
   const [inventoryPrices, setInventoryPrices] = useState({});
 
   useEffect(() => {
+    checkDataAvailability();
     // Pre-fetch prices secretly for Sales mapping
     getStockLevels().then(res => {
       if (res.success && res.data) {
@@ -31,6 +36,20 @@ function Reports() {
       }
     });
   }, []);
+
+  const checkDataAvailability = async () => {
+    try {
+      const [salesRes, purchasesRes] = await Promise.all([
+        getSalesHistory(),
+        getPurchaseHistory()
+      ]);
+      
+      setHasSales(salesRes.success && salesRes.data && salesRes.data.length > 0);
+      setHasPurchases(purchasesRes.success && purchasesRes.data && purchasesRes.data.length > 0);
+    } catch (error) {
+      console.error('Error checking data availability:', error);
+    }
+  };
 
   // Filter helper logic
   const isDateInRange = (dateString) => {
@@ -185,16 +204,16 @@ function Reports() {
       if (type === 'sales') {
         const raw = await getFilteredSales();
         groupedData = generateReportGroup(raw, 'sales');
-        title = 'Sales Ledger History';
+        title = 'Sales Report';
       } else if (type === 'purchases') {
         const raw = await getFilteredPurchases();
         groupedData = generateReportGroup(raw, 'purchases');
-        title = 'Restock & Vendor Ledgers';
+        title = 'Purchase Report';
       } else if (type === 'inventory') {
         const res = await getStockLevels();
         if (!res.success || !res.data) throw new Error('Failed to fetch inventory');
         groupedData = generateReportGroup(res.data, 'inventory');
-        title = 'Raw Stock Valuation';
+        title = 'Inventory Report';
         isInventory = true;
       }
 
@@ -277,14 +296,13 @@ function Reports() {
 
   return (
     <div className="reports" style={{ position: 'relative' }}>
-      <h1 className="page-title">Reports & Extraction Dashboard</h1>
-      <p style={{ color: '#6B7280', marginBottom: '25px' }}>Filter your offline extraction data ranges intelligently down to the exact specific days you need.</p>
+      <h1 className="page-title">Reports</h1>
 
       {/* GLOBAL DATE FILTER BAR */}
       <div className="card" style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '30px', background: '#F9FAFB', border: '1px solid #E5E7EB', padding: '15px 25px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Calendar size={20} color="#4F46E5" />
-          <strong style={{ color: '#374151', fontSize: '15px' }}>Report Timeframe Scope:</strong>
+          <strong style={{ color: '#374151', fontSize: '15px' }}>Date Range:</strong>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -308,60 +326,72 @@ function Reports() {
         </div>
       </div>
 
-      <div className="reports-grid">
-
-        {/* SALES CARD */}
-        <div className="report-card">
-          <div className="report-icon-wrapper green">
-            <TrendingUp size={28} />
-          </div>
-          <h3 className="report-title">Sales Performance Ledger</h3>
-          <p className="report-description">A beautiful daily-categorized summary of all completed sales and deducted stock items.</p>
-          <div className="report-footer" style={{ gap: '10px', marginTop: 'auto' }}>
-            <button className="download-btn" onClick={() => handleAction('sales', 'view')} disabled={downloading === 'sales'} style={{ flex: 1, padding: '12px 0', background: '#10B981', display: 'flex', justifyContent: 'center' }}>
-              <Eye size={16} /> View
-            </button>
-            <button className="download-btn" onClick={() => handleAction('sales', 'download')} disabled={downloading === 'sales'} style={{ flex: 1, padding: '12px 0', background: '#4F46E5', display: 'flex', justifyContent: 'center' }}>
-              <Download size={14} /> Save File
-            </button>
-          </div>
+      {!hasSales && !hasPurchases ? (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6B7280' }}>
+          <Package size={64} style={{ margin: '0 auto 20px', opacity: 0.3 }} />
+          <h2 style={{ color: '#374151', marginBottom: '10px' }}>No Reports Available</h2>
+          <p>Start making sales or uploading purchase bills to generate reports.</p>
         </div>
+      ) : (
+        <div className="reports-grid">
 
-        {/* PURCHASES CARD */}
-        <div className="report-card">
-          <div className="report-icon-wrapper purple">
-            <ShoppingCart size={28} />
+          {/* SALES CARD - Only show if sales exist */}
+          {hasSales && (
+            <div className="report-card">
+              <div className="report-icon-wrapper green">
+                <TrendingUp size={28} />
+              </div>
+              <h3 className="report-title">Sales Report</h3>
+              <p className="report-description">Daily summary of all sales transactions.</p>
+              <div className="report-footer" style={{ gap: '10px', marginTop: 'auto' }}>
+                <button className="download-btn" onClick={() => handleAction('sales', 'view')} disabled={downloading === 'sales'} style={{ flex: 1, padding: '12px 0', background: '#10B981', display: 'flex', justifyContent: 'center' }}>
+                  <Eye size={16} /> View
+                </button>
+                <button className="download-btn" onClick={() => handleAction('sales', 'download')} disabled={downloading === 'sales'} style={{ flex: 1, padding: '12px 0', background: '#4F46E5', display: 'flex', justifyContent: 'center' }}>
+                  <Download size={14} /> Save
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* PURCHASES CARD - Only show if purchases exist */}
+          {hasPurchases && (
+            <div className="report-card">
+              <div className="report-icon-wrapper purple">
+                <ShoppingCart size={28} />
+              </div>
+              <h3 className="report-title">Purchase Report</h3>
+              <p className="report-description">Daily summary of all purchase transactions.</p>
+              <div className="report-footer" style={{ gap: '10px', marginTop: 'auto' }}>
+                <button className="download-btn" onClick={() => handleAction('purchases', 'view')} disabled={downloading === 'purchases'} style={{ flex: 1, padding: '12px 0', background: '#8B5CF6', display: 'flex', justifyContent: 'center' }}>
+                  <Eye size={16} /> View
+                </button>
+                <button className="download-btn" onClick={() => handleAction('purchases', 'download')} disabled={downloading === 'purchases'} style={{ flex: 1, padding: '12px 0', background: '#4F46E5', display: 'flex', justifyContent: 'center' }}>
+                  <Download size={14} /> Save
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* INVENTORY CARD - Always show */}
+          <div className="report-card">
+            <div className="report-icon-wrapper blue">
+              <Package size={28} />
+            </div>
+            <h3 className="report-title">Inventory Report</h3>
+            <p className="report-description">Current stock levels overview.</p>
+            <div className="report-footer" style={{ gap: '10px', marginTop: 'auto' }}>
+              <button className="download-btn" onClick={() => handleAction('inventory', 'view')} disabled={downloading === 'inventory'} style={{ flex: 1, padding: '12px 0', background: '#3B82F6', display: 'flex', justifyContent: 'center' }}>
+                <Eye size={16} /> View
+              </button>
+              <button className="download-btn" onClick={() => handleAction('inventory', 'download')} disabled={downloading === 'inventory'} style={{ flex: 1, padding: '12px 0', background: '#4F46E5', display: 'flex', justifyContent: 'center' }}>
+                <Download size={14} /> Save
+              </button>
+            </div>
           </div>
-          <h3 className="report-title">Purchase History Ledger</h3>
-          <p className="report-description">A beautiful daily-categorized ledger of every product safely restocked via vendor bills.</p>
-          <div className="report-footer" style={{ gap: '10px', marginTop: 'auto' }}>
-            <button className="download-btn" onClick={() => handleAction('purchases', 'view')} disabled={downloading === 'purchases'} style={{ flex: 1, padding: '12px 0', background: '#8B5CF6', display: 'flex', justifyContent: 'center' }}>
-              <Eye size={16} /> View
-            </button>
-            <button className="download-btn" onClick={() => handleAction('purchases', 'download')} disabled={downloading === 'purchases'} style={{ flex: 1, padding: '12px 0', background: '#4F46E5', display: 'flex', justifyContent: 'center' }}>
-              <Download size={14} /> Save File
-            </button>
-          </div>
+
         </div>
-
-        {/* INVENTORY CARD */}
-        <div className="report-card">
-          <div className="report-icon-wrapper blue">
-            <Package size={28} />
-          </div>
-          <h3 className="report-title">Inventory Summary</h3>
-          <p className="report-description">Complete active overview of your current accessible stock levels natively mapped.</p>
-          <div className="report-footer" style={{ gap: '10px', marginTop: 'auto' }}>
-            <button className="download-btn" onClick={() => handleAction('inventory', 'view')} disabled={downloading === 'inventory'} style={{ flex: 1, padding: '12px 0', background: '#3B82F6', display: 'flex', justifyContent: 'center' }}>
-              <Eye size={16} /> View
-            </button>
-            <button className="download-btn" onClick={() => handleAction('inventory', 'download')} disabled={downloading === 'inventory'} style={{ flex: 1, padding: '12px 0', background: '#4F46E5', display: 'flex', justifyContent: 'center' }}>
-              <Download size={14} /> Save File
-            </button>
-          </div>
-        </div>
-
-      </div>
+      )}
 
       {/* FULLSCREEN VIEW MODAL */}
       {viewModal.isOpen && (

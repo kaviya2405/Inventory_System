@@ -475,6 +475,77 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// Update user settings
+const updateSettings = async (req, res) => {
+  try {
+    const userId = req.userId; // From auth middleware
+    const { monthlyRevenueGoal, dashboardDateRange, currency, timezone, dateFormat, notifications } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update settings
+    if (monthlyRevenueGoal !== undefined) user.settings.monthlyRevenueGoal = monthlyRevenueGoal;
+    if (dashboardDateRange) user.settings.dashboardDateRange = dashboardDateRange;
+    if (currency) user.settings.currency = currency;
+    if (timezone) user.settings.timezone = timezone;
+    if (dateFormat) user.settings.dateFormat = dateFormat;
+    if (notifications) {
+      user.settings.notifications = {
+        ...user.settings.notifications,
+        ...notifications
+      };
+    }
+    user.settings.isOnboardingComplete = true;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Settings updated successfully',
+      settings: user.settings
+    });
+  } catch (error) {
+    console.error('Update settings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Get user settings
+const getSettings = async (req, res) => {
+  try {
+    const userId = req.userId; // From auth middleware
+
+    const user = await User.findById(userId).select('settings storeName');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      settings: user.settings,
+      storeName: user.storeName
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   signup,
   verifySignupOTP,
@@ -482,5 +553,7 @@ module.exports = {
   forgetPassword,
   resetPassword,
   getCurrentUser,
-  updateProfile
+  updateProfile,
+  updateSettings,
+  getSettings
 };

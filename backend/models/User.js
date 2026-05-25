@@ -46,6 +46,50 @@ const userSchema = new mongoose.Schema({
   },
   otpExpiry: {
     type: Date
+  },
+  // Settings fields
+  settings: {
+    monthlyRevenueGoal: {
+      type: Number,
+      default: 50000
+    },
+    dashboardDateRange: {
+      type: String,
+      enum: ['7', '30', '90'],
+      default: '30'
+    },
+    currency: {
+      type: String,
+      enum: ['USD', 'EUR', 'GBP', 'INR'],
+      default: 'INR'
+    },
+    timezone: {
+      type: String,
+      default: 'UTC+5.5'
+    },
+    dateFormat: {
+      type: String,
+      enum: ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'],
+      default: 'DD/MM/YYYY'
+    },
+    notifications: {
+      purchaseOrderConfirmation: {
+        type: Boolean,
+        default: true
+      },
+      dailySalesSummary: {
+        type: Boolean,
+        default: false
+      },
+      unusualSalesSpike: {
+        type: Boolean,
+        default: true
+      }
+    },
+    isOnboardingComplete: {
+      type: Boolean,
+      default: false
+    }
   }
 }, {
   timestamps: true

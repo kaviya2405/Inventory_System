@@ -13,5 +13,7 @@ router.post('/reset-password', authController.resetPassword);
 // Protected routes (requires authentication middleware)
 router.get('/me', authMiddleware, authController.getCurrentUser);
 router.put('/update-profile', authMiddleware, authController.updateProfile);
+router.get('/settings', authMiddleware, authController.getSettings);
+router.put('/settings', authMiddleware, authController.updateSettings);
 
 module.exports = router;

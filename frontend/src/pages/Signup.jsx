@@ -93,7 +93,7 @@ function Signup() {
       if (data.success) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/');
+        navigate('/settings'); // Redirect to settings for onboarding
       } else {
         setError(data.message || 'OTP verification failed');
       }
