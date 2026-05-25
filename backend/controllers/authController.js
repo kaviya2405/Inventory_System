@@ -546,7 +546,7 @@ const getSettings = async (req, res) => {
   try {
     const userId = req.userId; // From auth middleware
 
-    const user = await User.findById(userId).select('settings storeName');
+    const user = await User.findById(userId).select('settings storeName name email phone');
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -556,8 +556,22 @@ const getSettings = async (req, res) => {
 
     res.json({
       success: true,
-      settings: user.settings,
-      storeName: user.storeName
+      user: {
+        storeName: user.storeName,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        settings: user.settings
+      }
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
     });
   } catch (error) {
     console.error('Get settings error:', error);
