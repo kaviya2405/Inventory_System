@@ -49,6 +49,18 @@ const userSchema = new mongoose.Schema({
   },
   // Settings fields
   settings: {
+    storeAddress: {
+      type: String,
+      default: ''
+    },
+    storePhone: {
+      type: String,
+      default: ''
+    },
+    storeEmail: {
+      type: String,
+      default: ''
+    },
     monthlyRevenueGoal: {
       type: Number,
       default: 50000
@@ -72,6 +84,10 @@ const userSchema = new mongoose.Schema({
       enum: ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'],
       default: 'DD/MM/YYYY'
     },
+    lowStockThreshold: {
+      type: Number,
+      default: 10
+    },
     notifications: {
       purchaseOrderConfirmation: {
         type: Boolean,
@@ -82,6 +98,10 @@ const userSchema = new mongoose.Schema({
         default: false
       },
       unusualSalesSpike: {
+        type: Boolean,
+        default: true
+      },
+      lowStockAlert: {
         type: Boolean,
         default: true
       }

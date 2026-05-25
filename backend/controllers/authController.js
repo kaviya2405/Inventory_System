@@ -479,7 +479,19 @@ const resetPassword = async (req, res) => {
 const updateSettings = async (req, res) => {
   try {
     const userId = req.userId; // From auth middleware
-    const { monthlyRevenueGoal, dashboardDateRange, currency, timezone, dateFormat, notifications } = req.body;
+    const { 
+      storeName, 
+      storeAddress,
+      storePhone,
+      storeEmail,
+      monthlyRevenueGoal, 
+      dashboardDateRange, 
+      currency, 
+      timezone, 
+      dateFormat, 
+      lowStockThreshold,
+      notifications 
+    } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -489,12 +501,19 @@ const updateSettings = async (req, res) => {
       });
     }
 
+    // Update basic info
+    if (storeName) user.storeName = storeName;
+    
     // Update settings
+    if (storeAddress !== undefined) user.settings.storeAddress = storeAddress;
+    if (storePhone !== undefined) user.settings.storePhone = storePhone;
+    if (storeEmail !== undefined) user.settings.storeEmail = storeEmail;
     if (monthlyRevenueGoal !== undefined) user.settings.monthlyRevenueGoal = monthlyRevenueGoal;
     if (dashboardDateRange) user.settings.dashboardDateRange = dashboardDateRange;
     if (currency) user.settings.currency = currency;
     if (timezone) user.settings.timezone = timezone;
     if (dateFormat) user.settings.dateFormat = dateFormat;
+    if (lowStockThreshold !== undefined) user.settings.lowStockThreshold = lowStockThreshold;
     if (notifications) {
       user.settings.notifications = {
         ...user.settings.notifications,
@@ -508,7 +527,10 @@ const updateSettings = async (req, res) => {
     res.json({
       success: true,
       message: 'Settings updated successfully',
-      settings: user.settings
+      user: {
+        storeName: user.storeName,
+        settings: user.settings
+      }
     });
   } catch (error) {
     console.error('Update settings error:', error);

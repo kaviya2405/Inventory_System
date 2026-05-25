@@ -11,15 +11,20 @@ function Settings() {
   
   const [settings, setSettings] = useState({
     storeName: '',
+    storeAddress: '',
+    storePhone: '',
+    storeEmail: '',
     monthlyRevenueGoal: 50000,
     dashboardDateRange: '30',
     currency: 'INR',
     timezone: 'UTC+5.5',
     dateFormat: 'DD/MM/YYYY',
+    lowStockThreshold: 10,
     notifications: {
       purchaseOrderConfirmation: true,
       dailySalesSummary: false,
-      unusualSalesSpike: true
+      unusualSalesSpike: true,
+      lowStockAlert: true
     }
   });
 
@@ -40,15 +45,20 @@ function Settings() {
       if (data.success) {
         setSettings({
           storeName: data.user.storeName || '',
+          storeAddress: data.user.settings?.storeAddress || '',
+          storePhone: data.user.settings?.storePhone || '',
+          storeEmail: data.user.settings?.storeEmail || '',
           monthlyRevenueGoal: data.user.settings?.monthlyRevenueGoal || 50000,
           dashboardDateRange: data.user.settings?.dashboardDateRange || '30',
           currency: data.user.settings?.currency || 'INR',
           timezone: data.user.settings?.timezone || 'UTC+5.5',
           dateFormat: data.user.settings?.dateFormat || 'DD/MM/YYYY',
+          lowStockThreshold: data.user.settings?.lowStockThreshold || 10,
           notifications: {
             purchaseOrderConfirmation: data.user.settings?.notifications?.purchaseOrderConfirmation ?? true,
             dailySalesSummary: data.user.settings?.notifications?.dailySalesSummary ?? false,
-            unusualSalesSpike: data.user.settings?.notifications?.unusualSalesSpike ?? true
+            unusualSalesSpike: data.user.settings?.notifications?.unusualSalesSpike ?? true,
+            lowStockAlert: data.user.settings?.notifications?.lowStockAlert ?? true
           }
         });
         setCurrency(data.user.settings?.currency || 'INR');
@@ -160,24 +170,43 @@ function Settings() {
             <Store size={24} color="#4F46E5" />
             <h2 className="section-title">Business Profile</h2>
           </div>
-          <p className="card-desc">Update your store information.</p>
+          <p className="card-desc">Update your store information and contact details.</p>
           <div className="settings-form">
             <div className="form-group">
-              <label>Store Name</label>
+              <label>Store Name *</label>
               <input 
                 type="text" 
                 value={settings.storeName}
                 onChange={(e) => handleChange('storeName', e.target.value)}
                 placeholder="Enter your store name"
+                required
               />
             </div>
             <div className="form-group">
-              <label>Monthly Revenue Goal</label>
+              <label>Store Address</label>
               <input 
-                type="number" 
-                value={settings.monthlyRevenueGoal}
-                onChange={(e) => handleChange('monthlyRevenueGoal', Number(e.target.value))}
-                placeholder="Enter monthly revenue goal"
+                type="text" 
+                value={settings.storeAddress}
+                onChange={(e) => handleChange('storeAddress', e.target.value)}
+                placeholder="Enter store address"
+              />
+            </div>
+            <div className="form-group">
+              <label>Store Phone</label>
+              <input 
+                type="tel" 
+                value={settings.storePhone}
+                onChange={(e) => handleChange('storePhone', e.target.value)}
+                placeholder="Enter store phone number"
+              />
+            </div>
+            <div className="form-group">
+              <label>Store Email</label>
+              <input 
+                type="email" 
+                value={settings.storeEmail}
+                onChange={(e) => handleChange('storeEmail', e.target.value)}
+                placeholder="Enter store email"
               />
             </div>
           </div>
@@ -189,8 +218,26 @@ function Settings() {
             <TrendingUp size={24} color="#10B981" />
             <h2 className="section-title">Sales Goals & Analytics</h2>
           </div>
-          <p className="card-desc">Configure your sales targets used in the dashboard charts.</p>
+          <p className="card-desc">Configure your sales targets and inventory thresholds.</p>
           <div className="settings-form">
+            <div className="form-group">
+              <label>Monthly Revenue Goal</label>
+              <input 
+                type="number" 
+                value={settings.monthlyRevenueGoal}
+                onChange={(e) => handleChange('monthlyRevenueGoal', Number(e.target.value))}
+                placeholder="Enter monthly revenue goal"
+              />
+            </div>
+            <div className="form-group">
+              <label>Low Stock Alert Threshold</label>
+              <input 
+                type="number" 
+                value={settings.lowStockThreshold}
+                onChange={(e) => handleChange('lowStockThreshold', Number(e.target.value))}
+                placeholder="Alert when stock falls below this number"
+              />
+            </div>
             <div className="form-group">
               <label>Dashboard Default Date Range</label>
               <select 
@@ -263,6 +310,20 @@ function Settings() {
                   type="checkbox" 
                   checked={settings.notifications.unusualSalesSpike}
                   onChange={(e) => handleNotificationChange('unusualSalesSpike', e.target.checked)}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
+            <div className="toggle-group">
+              <div className="toggle-text">
+                <label>Low Stock Alert</label>
+                <span>Get notified when product stock falls below threshold</span>
+              </div>
+              <label className="switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.notifications.lowStockAlert}
+                  onChange={(e) => handleNotificationChange('lowStockAlert', e.target.checked)}
                 />
                 <span className="slider round"></span>
               </label>
